@@ -59,7 +59,6 @@ public class Main {
             if (merge(connections[remove].x, connections[remove].y)) {
                 ans += xSize*ySize;
                 size[find(connections[remove].x)] = xSize+ySize;
-                size[find(connections[remove].y)] = xSize+ySize;
             }
         }
         System.out.println(ans);
