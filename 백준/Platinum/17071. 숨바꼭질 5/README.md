@@ -24,3 +24,34 @@
 
  <p>수빈이가 동생을 찾는 가장 빠른 시간을 출력한다. 수빈이가 동생을 찾을 수 없거나, 찾는 위치가 500,000을 넘는 경우에는 -1을 출력한다.</p>
 
+### 문제 풀이
+- 전형적인 너비 우선 탐색 ps같지만 다른 점이 있다면 1부터 500000으로 index의 범위가 굉장히 커서 너비 우선 탐색을 할 때 굉장히 많은 node가 queue 안에 들어갈 것이라는 예상이 되었고, 동생의 위치는 계속해서 이동하는데 그 이동하는 거리도 달라지는 특이한 문제였다.
+- 이 문제를 풀 때 가장 중요했던 핵심은 수빈이의 위치는 짝수 시간 이후에는 자기 자리에 있을 수 있다는 점이었다. 이 말인 즉슨, +1과 -1을 반복한다면 2초, 4초, 6초 .... 뒤에 자기 자리에 다시 올 수 있는 것이다. 이 점을 활용하여 visited 배열도 index 와 이 시간이 홀수인지 짝수인지에 따라 구분지어주기 위해 
+``` java
+static final int MAX = 500000;
+boolean visited[][] = new boolean[MAX+1][2];
+```
+위와 같이 정의할 수 있었다.
+- 그리고, 너비 우선 탐색을 하기 전, 동생의 위치 또한 미리 k로부터 몇 초 뒤에 어느 index에 있는지 계산하고, 그 index에는 따로 동생이 도착하는데 걸린 시간을 저장하기 위해 배열을 만들어주었다.
+``` java
+while (!myQ.isEmpty()) {
+    State now = myQ.poll();
+    if (timeOfYoung[now.idx] != -1 && timeOfYoung[now.idx] >= now.time &&
+            timeOfYoung[now.idx] % 2 == now.time % 2) {
+        ret = Math.min(ret, timeOfYoung[now.idx]);
+    }
+    if (now.idx + 1 <= MAX && !visited[now.idx + 1][(now.time+1)%2]) {
+        visited[now.idx + 1][(now.time+1)%2] = true;
+        myQ.offer(new State(now.idx+1, now.time+1));
+    }
+    if (now.idx - 1 >= 0 && !visited[now.idx - 1][(now.time+1)%2]) {
+        visited[now.idx - 1][(now.time+1)%2] = true;
+        myQ.offer(new State(now.idx-1, now.time+1));
+    }
+    if (now.idx * 2 <= MAX && !visited[now.idx * 2][(now.time+1)%2]) {
+        visited[now.idx * 2][(now.time+1)%2] = true;
+        myQ.offer(new State(now.idx*2, now.time+1));
+    }
+}
+```
+- 위와 같이 bfs를 진행하였고, 특이한 점은 timeOfYoung 배열에서 수빈이의 현재 위치를 넣어줌으로써 -1 이라면 동생이 전혀 다녀가지 않은 곳이니 패스하고, 만약 -1이 아닌데 동생이 다녀간 시간보다 작다면 그 뜻은 동생보다 먼저 해당 위치에 도달했다는 것이므로 패스하고, 홀짝이 맞지 않다면 위에서 언급했던 것처럼 수빈이가 제자리에 있을 수 없는 상황이기 때문에 패스한다. 그리고, 만족한 시간의 최솟값을 ret return 해주었다.
